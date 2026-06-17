@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { BookOpen, Flame, Brain, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import Link from "next/link";
 
 export default function LoginPage() {
   const { data: session, status } = useSession();
@@ -121,6 +122,13 @@ export default function LoginPage() {
                 </svg>
               )}
               {loading ? "Signing in..." : "Continue with Google"}
+            </Button>
+            <Button
+              disabled={loading}
+              className="w-full h-12 text-base"
+              variant="outline"
+            >
+              <Link href="/learn">Go to learn page</Link>
             </Button>
 
             <p className="text-xs text-muted-foreground text-center">

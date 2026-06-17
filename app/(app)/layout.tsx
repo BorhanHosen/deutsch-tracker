@@ -13,7 +13,7 @@ export default async function AppLayout({
   const session = await getServerSession(authOptions);
 
   if (!session) {
-    redirect("/login");
+    redirect("/learn");
   }
 
   return (
