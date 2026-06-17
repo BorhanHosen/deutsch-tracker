@@ -1,0 +1,42 @@
+[
+  {
+    "id": "task_001",
+    "type": "learn_words",
+    "title": "Learn 5 New Words",
+    "description": "Add 5 new German words to your vocabulary today",
+    "targetCount": 5,
+    "xpReward": 25
+  },
+  {
+    "id": "task_002",
+    "type": "write_sentences",
+    "title": "Write 3 Sentences",
+    "description": "Write 3 German sentences using your vocabulary words",
+    "targetCount": 3,
+    "xpReward": 30
+  },
+  {
+    "id": "task_003",
+    "type": "review",
+    "title": "Review Vocabulary",
+    "description": "Review at least 10 words from your vocabulary list",
+    "targetCount": 10,
+    "xpReward": 20
+  },
+  {
+    "id": "task_004",
+    "type": "real_life",
+    "title": "Real Life Challenge",
+    "description": "Describe 5 objects around you in German",
+    "targetCount": 5,
+    "xpReward": 35
+  },
+  {
+    "id": "task_005",
+    "type": "quiz",
+    "title": "Complete a Quiz",
+    "description": "Answer 10 quiz questions from your vocabulary",
+    "targetCount": 10,
+    "xpReward": 40
+  }
+]
