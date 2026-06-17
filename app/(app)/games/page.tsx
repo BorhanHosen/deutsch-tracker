@@ -50,23 +50,29 @@ function WordScramble({ words }: { words: WordItem[] }) {
 
   const currentWord = words[currentIndex];
 
+  // ✅ Scramble the FULL word including article
+  // Spaces are removed before scrambling so
+  // "die Schule" → "ieDhcSuel" type scramble
+  // but we keep letters only, no spaces
   const scrambleWord = useCallback((word: string): string => {
-    if (word.length <= 1) return word;
-    const arr = word.split("");
+    const letters = word.replace(/\s/g, "").split("");
+    if (letters.length <= 1) return letters.join("");
+
+    const arr = [...letters];
     for (let i = arr.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [arr[i], arr[j]] = [arr[j], arr[i]];
     }
     const result = arr.join("");
-    return result === word ? scrambleWord(word) : result;
+    // Avoid scrambling to the exact same
+    // letter sequence
+    const original = word.replace(/\s/g, "");
+    return result === original ? scrambleWord(word) : result;
   }, []);
 
   useEffect(() => {
     if (currentWord) {
-      // Use just the main word without article
-      const wordOnly =
-        currentWord.german.split(" ").pop() || currentWord.german;
-      setScrambled(scrambleWord(wordOnly));
+      setScrambled(scrambleWord(currentWord.german));
       setInput("");
       setState("playing");
       setTimeLeft(30);
@@ -84,7 +90,7 @@ function WordScramble({ words }: { words: WordItem[] }) {
         } else {
           setCurrentIndex((i) => i + 1);
         }
-      }, 1500);
+      }, 1800);
       return;
     }
     const t = setTimeout(() => setTimeLeft((t) => t - 1), 1000);
@@ -94,11 +100,12 @@ function WordScramble({ words }: { words: WordItem[] }) {
   const handleSubmit = () => {
     if (!input.trim() || !currentWord) return;
     setTotalAttempts((t) => t + 1);
-    // Check against full german or just the word part
-    const wordOnly = currentWord.german.split(" ").pop() || currentWord.german;
-    const correct =
-      input.trim().toLowerCase() === wordOnly.toLowerCase() ||
-      input.trim().toLowerCase() === currentWord.german.toLowerCase();
+
+    // ✅ STRICT exact match — case sensitive,
+    // must include article exactly as stored
+    // "die Schule" === "die Schule" → correct
+    // "Schule", "schule", "die schule" → wrong
+    const correct = input.trim() === currentWord.german;
 
     if (correct) {
       setScore((s) => s + Math.ceil(timeLeft / 3));
@@ -113,7 +120,7 @@ function WordScramble({ words }: { words: WordItem[] }) {
       } else {
         setCurrentIndex((i) => i + 1);
       }
-    }, 1500);
+    }, 1800);
   };
 
   const reset = () => {
@@ -147,8 +154,6 @@ function WordScramble({ words }: { words: WordItem[] }) {
   }
 
   if (!currentWord) return null;
-
-  const wordOnly = currentWord.german.split(" ").pop() || currentWord.german;
 
   return (
     <div className="space-y-4">
@@ -185,6 +190,9 @@ function WordScramble({ words }: { words: WordItem[] }) {
             <p className="text-sm text-muted-foreground">
               Hint: {currentWord.english}
             </p>
+            <p className="text-xs text-muted-foreground/70 mt-1">
+              Include the article (der/die/das) and use correct capitalization
+            </p>
           </div>
 
           <div className="flex justify-center gap-2 flex-wrap my-4">
@@ -219,10 +227,13 @@ function WordScramble({ words }: { words: WordItem[] }) {
               >
                 <div className="flex items-center gap-2">
                   <XCircle className="w-5 h-5" />
-                  <span className="font-semibold">Wrong!</span>
+                  <span className="font-semibold">
+                    {input.trim() ? "Wrong!" : "Time's up!"}
+                  </span>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  Answer: <strong className="text-primary">{wordOnly}</strong>
+                  Answer:{" "}
+                  <strong className="text-primary">{currentWord.german}</strong>
                 </p>
               </motion.div>
             )}
@@ -231,12 +242,15 @@ function WordScramble({ words }: { words: WordItem[] }) {
           {state === "playing" && (
             <div className="flex gap-2">
               <Input
-                placeholder="Type the word..."
+                placeholder="e.g. die Schule"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
                 className="text-center font-medium"
                 autoFocus
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
               />
               <Button onClick={handleSubmit}>
                 <ArrowRight className="w-4 h-4" />

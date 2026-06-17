@@ -100,47 +100,29 @@ export default function LearnPage() {
     }
   }, [initialized]);
 
-  // ✅ Fetch ALL words once, filter client-side
+  // ✅ Fetch ALL words in ONE request (no batching loop)
   const fetchAllWords = useCallback(async () => {
     if (!initialized || hasFetchedRef.current) return;
 
     setLoading(true);
     try {
-      // Get total count first
-      const countRes = await fetch(`/api/learn/public?page=1&limit=1`);
-      const countData = await countRes.json();
+      const res = await fetch("/api/learn/public/all");
+      const data = await res.json();
 
-      if (!countData.seeded) {
+      if (!res.ok || !data.seeded) {
         setSeeded(false);
         setLoading(false);
         return;
       }
 
       setSeeded(true);
-      setTotalAvailable(countData.total || 0);
-
-      // Fetch all words in batches
-      const allWords: LearnWord[] = [];
-      let page = 1;
-      const batchSize = 100;
-
-      while (true) {
-        const res = await fetch(
-          `/api/learn/public?page=${page}&limit=${batchSize}`,
-        );
-        const data = await res.json();
-
-        if (!res.ok || !data.words || data.words.length === 0) break;
-
-        allWords.push(...data.words);
-
-        if (page >= data.pages) break;
-        page++;
-      }
+      setTotalAvailable(data.total || 0);
 
       // Filter out already-learned words
       const learnedSet = new Set(allLearnedIds);
-      const unlearned = allWords.filter((w) => !learnedSet.has(w._id));
+      const unlearned = (data.words as LearnWord[]).filter(
+        (w) => !learnedSet.has(w._id),
+      );
 
       setAllUnlearnedWords(unlearned);
       hasFetchedRef.current = true;

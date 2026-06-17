@@ -284,31 +284,17 @@ export default function ReviewPage() {
 
     setLoading(true);
     try {
-      // Fetch all words in batches
-      const allFetched: ReviewWord[] = [];
-      let page = 1;
-      const batchSize = 100;
+      // ✅ ONE request instead of a batching loop
+      const res = await fetch("/api/learn/public/all");
+      const data = await res.json();
 
-      while (true) {
-        const res = await fetch(
-          `/api/learn/public?page=${page}&limit=${batchSize}`,
-        );
-        const data = await res.json();
+      if (res.ok && data.words) {
+        const learnedWords = (data.words as ReviewWord[])
+          .filter((w) => ids.includes(w._id))
+          .sort((a, b) => a.order - b.order);
 
-        if (!res.ok || !data.words || data.words.length === 0) break;
-
-        allFetched.push(...data.words);
-
-        if (page >= data.pages) break;
-        page++;
+        setAllWords(learnedWords);
       }
-
-      // Filter to only learned words
-      const learnedWords = allFetched
-        .filter((w) => ids.includes(w._id))
-        .sort((a, b) => a.order - b.order);
-
-      setAllWords(learnedWords);
     } catch {
       toast.error("Failed to load words");
     } finally {
