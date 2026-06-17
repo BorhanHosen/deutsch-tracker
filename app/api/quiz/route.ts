@@ -5,6 +5,7 @@ import connectDB from "@/lib/mongodb";
 import Word from "@/models/Word";
 import User from "@/models/User";
 import { updateTaskProgress } from "@/lib/task-progress";
+import { getLevelFromXP } from "@/lib/utils";
 
 export async function GET(request: NextRequest) {
   try {
